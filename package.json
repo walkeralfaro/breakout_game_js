@@ -1,0 +1,17 @@
+{
+  "name": "04_breakout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "dev": "vite",
+    "build": "npm run clean && vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vite": "^5.1.4"
+  }
+}

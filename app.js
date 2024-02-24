@@ -45,12 +45,11 @@ brick.status = {
   DESTROYED: 0
 }
 
-const level_name = 'level_2'
+const level_name = 'level_2';
 
 chargeLevel().then( level => createBlueprintLevel(level, level_name) );
 
 function createBlueprintLevel(level, level_number) {
-  // console.log(level[level_number]);
 
   level[level_number].forEach((row, r) => {
     bricks[r] = [];
@@ -58,8 +57,6 @@ function createBlueprintLevel(level, level_number) {
       const brickX = (c * brick.width) + brick.offsetLeft;
       const brickY = (r * brick.height) + brick.offsetTop;   
       const state = block === 0 ? brick.status.DESTROYED : brick.status.ACTIVE;
-
-      // console.log(state);
 
       bricks[r][c] = {
         x: brickX,
@@ -69,38 +66,13 @@ function createBlueprintLevel(level, level_number) {
         status: state,
         color: block
       }
-
-      // console.log(bricks);
     })
   });
-
-
 }
 
-
-// for (let r = 0; r < brick.rowCount; r++) {
-//   bricks[r] = [];
-//   for (let c = 0; c <brick.columnCount; c++) {
-//     const brickY = ( r * brick.height ) + brick.offsetTop;
-//     const brickX = ( c * brick.width ) + brick.offsetLeft;
-//     const random = Math.floor(Math.random() * 8);
-
-//     bricks[r][c] = {
-//       x: brickX,
-//       y: brickY,
-//       width: brick.width,
-//       height: brick.height,
-//       status: brick.status.ACTIVE,
-//       color: random
-//     }
-//   }
-// }
-
-// console.log(bricks);
-
-function chargeAudio(url) {
+function chargeAudio(urlAudio) {
   const audio = new Audio();
-  audio.src = url;
+  audio.src = urlAudio;
   return audio;
 }
 
@@ -281,32 +253,6 @@ function drawBricks() {
       collisionDetectionBrickBall(block, ball)
     })
   })
-
-  // for (let r = 0; r < brick.rowCount; r++) {
-  //   for (let c = 0; c <brick.columnCount; c++) {
-  //     const currentBrick = bricks[r][c];
-  //     // console.log(currentBrick);
-  //     if (currentBrick.status === brick.status.DESTROYED) 
-  //     continue;
-
-  //     const clipX = (currentBrick.color * 32) + 288;
-
-  //     ctx.drawImage(
-  //       $sprite,
-  //       clipX,
-  //       0,
-  //       brick.width,
-  //       brick.height,
-  //       currentBrick.x,
-  //       currentBrick.y,
-  //       brick.width,
-  //       brick.height,
-  //     )
-
-  //     collisionDetectionBrickBall(currentBrick, ball);
-  //   }
-  // }
-
 }
 
 function calcArctangent(object1, object2) {
