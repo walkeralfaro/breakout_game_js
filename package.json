@@ -1,16 +1,14 @@
 {
   "name": "04_breakout",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "type": "module",
   "scripts": {
     "clean": "rm -rf dist",
     "dev": "vite",
-    "build": "npm run clean && vite build"
+    "build": "npm run clean && vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "vite": "^5.1.4"
   }
