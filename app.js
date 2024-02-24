@@ -1,7 +1,8 @@
+import { chargeLevel } from './charge_levels.js';
+
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const $sprite = document.querySelector('#sprite');
-const $backgrounds = document.querySelector('#backgrounds');
 const sounds = {
   pong: chargeAudio('./assets/sounds/breakout_audio_1.wav'),
   pong2: chargeAudio('./assets/sounds/breakout_audio_2.wav'),
@@ -44,23 +45,58 @@ brick.status = {
   DESTROYED: 0
 }
 
-for (let r = 0; r < brick.rowCount; r++) {
-  bricks[r] = [];
-  for (let c = 0; c <brick.columnCount; c++) {
-    const brickY = ( r * brick.height ) + brick.offsetTop;
-    const brickX = ( c * brick.width ) + brick.offsetLeft;
-    const random = Math.floor(Math.random() * 8);
+const level_name = 'level_2'
 
-    bricks[r][c] = {
-      x: brickX,
-      y: brickY,
-      width: brick.width,
-      height: brick.height,
-      status: brick.status.ACTIVE,
-      color: random
-    }
-  }
+chargeLevel().then( level => createBlueprintLevel(level, level_name) );
+
+function createBlueprintLevel(level, level_number) {
+  // console.log(level[level_number]);
+
+  level[level_number].forEach((row, r) => {
+    bricks[r] = [];
+    row.forEach((block, c) => {
+      const brickX = (c * brick.width) + brick.offsetLeft;
+      const brickY = (r * brick.height) + brick.offsetTop;   
+      const state = block === 0 ? brick.status.DESTROYED : brick.status.ACTIVE;
+
+      // console.log(state);
+
+      bricks[r][c] = {
+        x: brickX,
+        y: brickY,
+        width: brick.width,
+        height: brick.height,
+        status: state,
+        color: block
+      }
+
+      // console.log(bricks);
+    })
+  });
+
+
 }
+
+
+// for (let r = 0; r < brick.rowCount; r++) {
+//   bricks[r] = [];
+//   for (let c = 0; c <brick.columnCount; c++) {
+//     const brickY = ( r * brick.height ) + brick.offsetTop;
+//     const brickX = ( c * brick.width ) + brick.offsetLeft;
+//     const random = Math.floor(Math.random() * 8);
+
+//     bricks[r][c] = {
+//       x: brickX,
+//       y: brickY,
+//       width: brick.width,
+//       height: brick.height,
+//       status: brick.status.ACTIVE,
+//       color: random
+//     }
+//   }
+// }
+
+// console.log(bricks);
 
 function chargeAudio(url) {
   const audio = new Audio();
@@ -221,13 +257,14 @@ function collisionDetectionBrickBall(object1, object2) {
 
 function drawBricks() {
 
-  for (let r = 0; r < brick.rowCount; r++) {
-    for (let c = 0; c <brick.columnCount; c++) {
-      const currentBrick = bricks[r][c];
-      if (currentBrick.status === brick.status.DESTROYED) 
-      continue;
+  bricks.forEach(row => {
+    row.forEach(block => {
 
-      const clipX = (currentBrick.color * 32) + 288;
+      if(block.status === brick.status.DESTROYED){
+        return;
+      }
+
+      const clipX = (block.color * 32) + 288;
 
       ctx.drawImage(
         $sprite,
@@ -235,15 +272,40 @@ function drawBricks() {
         0,
         brick.width,
         brick.height,
-        currentBrick.x,
-        currentBrick.y,
+        block.x,
+        block.y,
         brick.width,
         brick.height,
       )
 
-      collisionDetectionBrickBall(currentBrick, ball);
-    }
-  }
+      collisionDetectionBrickBall(block, ball)
+    })
+  })
+
+  // for (let r = 0; r < brick.rowCount; r++) {
+  //   for (let c = 0; c <brick.columnCount; c++) {
+  //     const currentBrick = bricks[r][c];
+  //     // console.log(currentBrick);
+  //     if (currentBrick.status === brick.status.DESTROYED) 
+  //     continue;
+
+  //     const clipX = (currentBrick.color * 32) + 288;
+
+  //     ctx.drawImage(
+  //       $sprite,
+  //       clipX,
+  //       0,
+  //       brick.width,
+  //       brick.height,
+  //       currentBrick.x,
+  //       currentBrick.y,
+  //       brick.width,
+  //       brick.height,
+  //     )
+
+  //     collisionDetectionBrickBall(currentBrick, ball);
+  //   }
+  // }
 
 }
 
