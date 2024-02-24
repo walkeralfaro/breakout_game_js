@@ -1,19 +1,23 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const $sprite = document.querySelector('#sprite');
+const $backgrounds = document.querySelector('#backgrounds');
+const sounds = {
+  pong: chargeAudio('./assets/sounds/breakout_audio_1.wav'),
+  pong2: chargeAudio('./assets/sounds/breakout_audio_2.wav'),
+}
 
 canvas.width = 448;
 canvas.height = 400;
 
 /* Ball Variables */
 const ball = new Object;
-ball.radius = 5;
-ball.x = canvas.width / 2;
-ball.y = canvas.height - 30;
-ball.dx = 2;
-ball.dy = -4;
-ball.width = 10;
-ball.height = 10;
+ball.width = 8;
+ball.height = 8;
+ball.x = (canvas.width - ball.width) / 2;
+ball.y = canvas.height - ball.height - 30;
+ball.dx = 1;
+ball.dy = -3;
 
 /* Paddle Variables */
 const paddle = new Object;
@@ -33,6 +37,7 @@ brick.width = 32;
 brick.height = 16;
 brick.offsetTop = 80;
 brick.offsetLeft = 16;
+
 const bricks = [];
 brick.status = {
   ACTIVE: 1,
@@ -57,28 +62,55 @@ for (let r = 0; r < brick.rowCount; r++) {
   }
 }
 
+function chargeAudio(url) {
+  const audio = new Audio();
+  audio.src = url;
+  return audio;
+}
+
+function playAudio(audio) {
+  const newAudioInstance = audio.cloneNode();
+  newAudioInstance.play();
+}
+
 function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgb(70,180,50)';
-  ctx.fill();
+  ctx.drawImage(
+    $sprite,
+    2,
+    26,
+    8,
+    8,
+    ball.x,
+    ball.y,
+    ball.width,
+    ball.height
+  )
+
 }
 
 function shadowObjects() {
-  ctx.shadowColor = '#121212';
-  ctx.shadowOffsetX = 6;
-  ctx.shadowOffsetY = 6;
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
 }
 
 function ballMovement() {
   // la pelota toca las paredes
-  if (ball.x > canvas.width - ball.radius || ball.x < ball.radius) {ball.dx = -ball.dx;}
+  if (ball.x > canvas.width - ball.width || ball.x < ball.width) {
+    playAudio(sounds.pong2);
+    ball.dx = -ball.dx;
+  }
   
   // la pelota toca el techo
-  if (ball.y < ball.radius) {ball.dy = -ball.dy}
+  if (ball.y < ball.height - 4) {
+    playAudio(sounds.pong2);
+    ball.dy = -ball.dy
+  }
   
   // la pelota toca el suelo
-  if (ball.y > canvas.height - ball.radius) {gameOver()}
+  if (ball.y > canvas.height - ball.height) {
+    gameOver();
+  }
 
   // mover la pelota
   ball.x += ball.dx;
@@ -109,34 +141,81 @@ function paddleMovement() {
 
 function twoObjectsIntersect(object1, object2) {
 
-  return object1.x < object2.x + object2.width &&
-         object1.x + object1.width > object2.x &&
-         object1.y < object2.y + object2.height &&
-         object1.y + object1.height > object2.y;
+  return object1.x < object2.x + object2.width &&object1.x + object1.width > object2.x &&object1.y < object2.y + object2.height &&object1.y + object1.height > object2.y;
+
 }
 
-function collisionDetection() {
+function collisionDetectionPaddleBall() {
 
   // collition detection paddle with ball
   if(twoObjectsIntersect(paddle, ball)) {
-    if(ball.dy > 0 ) {
-      ball.dy = -ball.dy
-    } 
+    playAudio(sounds.pong);
+
+    const angle = calcArctangent(paddle, ball);
+
+    switch(true) {
+      case angle > 185 && angle < 210:
+        ball.dx = -2;
+        ball.dy = -2.5;
+        break;
+      case angle >= 210 && angle < 240:
+        ball.dx = -1;
+        ball.dy = -3;
+        break;
+      case angle >= 240 && angle < 270:
+        ball.dx = -0.5;
+        ball.dy = -3;
+        break;
+      case angle >= 270 && angle < 300:
+        ball.dx = 0.5;
+        ball.dy = -3;
+        break;
+      case angle >= 300 && angle < 330:
+        ball.dx = 1;
+        ball.dy = -3;
+        break;
+      case angle >= 330 && angle < 355:
+        ball.dx = 2;
+        ball.dy = -2.5;
+        break;
+      default:
+        ball.dx = 1;
+        ball.dy = -3;
+    }
   }
+}
+
+function collisionDetectionBrickBall(object1, object2) {
 
   // collition detection ball with brick
-  // for (let r = 0; r < brick.rowCount; r++) {
-  //   for (let c = 0; c <brick.columnCount; c++) {
-  //     const currentBrick = bricks[r][c];
-  //     if (currentBrick.status === brick.status.DESTROYED) 
-  //     continue;
+  if(twoObjectsIntersect(object1,object2)) {
+    playAudio(sounds.pong);
+    object1.status = brick.status.DESTROYED;
 
-  //     if(twoObjectsIntersect(ball, currentBrick)){
-  //       currentBrick.status = brick.status.DESTROYED;
-  //       ball.dy = -ball.dy;
-  //     }
-  //   }
-  // }
+    const angle = calcArctangent(object1, object2);
+    
+    if(angle >= 25 && angle < 155) {
+      if(object2.dy < 0 ) {
+        object2.dy = -object2.dy;
+      }
+    } else if(angle >= 155 && angle < 205) {
+      if(object2.dx > 0 ) {
+        object2.dx = -object2.dx;
+      }
+    } else if(angle >= 205 && angle < 335) {
+      if(object2.dy > 0 ) {
+        object2.dy = -object2.dy;
+      }
+    } else if(angle >= 335 && angle <= 360 ) {
+      if(object2.dx < 0 ) {
+        object2.dx = -object2.dx;
+      }
+    } else if(angle >= 0 && angle < 25 ) {
+      if(object2.dx < 0 ) {
+        ball.dx = -ball.dx;
+      }
+    }
+  }
 
 }
 
@@ -162,14 +241,30 @@ function drawBricks() {
         brick.height,
       )
 
-      if(twoObjectsIntersect(ball, currentBrick)){
-        currentBrick.status = brick.status.DESTROYED;
-        ball.dy = -ball.dy;
-      }
-
+      collisionDetectionBrickBall(currentBrick, ball);
     }
   }
 
+}
+
+function calcArctangent(object1, object2) {
+
+  object1.xo = object1.x + (object1.width / 2);
+  object1.yo = object1.y + (object1.height / 2);
+
+  object2.xo = object2.x + (object2.width / 2);
+  object2.yo = object2.y + (object2.height / 2);
+
+  const deltaX = object2.xo - object1.xo;
+  const deltaY = object2.yo - object1.yo;
+  const radianAngle = Math.atan2(deltaY, deltaX);
+  
+  let degreeAngle = radianAngle * (180 / Math.PI);
+  if (degreeAngle < 0) {
+    degreeAngle += 360;
+  }
+
+  return degreeAngle;
 }
 
 function cleanCanvas() {
@@ -211,13 +306,15 @@ function draw() {
   shadowObjects();
 
   initEvents();
-  drawBricks();
   
-  ballMovement();
+  drawBricks();
   drawBall();
+  ballMovement();
+  
   drawPaddle();
   paddleMovement();
-  collisionDetection();
+  
+  collisionDetectionPaddleBall();
   
   window.requestAnimationFrame(draw);
   
